@@ -11,6 +11,7 @@ import {
   ProductDetails,
 } from '../../styles/pages/product'
 import { priceFormatter } from '../../utils/formatter'
+import { useRouter } from 'next/router'
 
 interface ProductProps {
   product: {
@@ -25,6 +26,11 @@ interface ProductProps {
 
 export default function Product({ product }: ProductProps) {
   const { addItemsToCart, orderAlreadyExist } = useContext(CartContext)
+  const router = useRouter()
+
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
 
   function handleAddItemToCart() {
     const addNewItemToCart = { ...product }
@@ -69,10 +75,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const productId = String(params.id)
+  const productId = String(params?.id)
 
   if (!productId) {
-    return <div>Loading...</div>
+    return {
+      notFound: true,
+    }
   }
 
   const product = await stripe.products.retrieve(productId, {
